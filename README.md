@@ -22,6 +22,8 @@ A chave e enviada no header oficial `x-apisports-key`; ela nunca deve ser commit
 
 O Compose foi configurado para receber as variaveis do ambiente do Dokploy; nao e necessario criar um arquivo `.env` na VPS. Neste ambiente, PostgreSQL e Redis devem ser servicos internos ja provisionados no Dokploy. Para executar o primeiro sync, use o terminal do container `api` e rode `python pipiline.py`.
 
+O comando de inicializacao do servico `api` deve ser `uvicorn sports_bi.app.main:app --host 0.0.0.0 --port 8000`. Nao use somente `python3`, pois esse processo termina imediatamente e gera `502 Bad Gateway`. O `Dockerfile` tambem define esse comando por padrao.
+
 ### Deploy automatico pelo GitHub Actions
 
 O workflow em `.github/workflows/deploy-dokploy.yml` dispara um novo deploy a cada push na branch `main`. No repositorio GitHub, cadastre em `Settings > Secrets and variables > Actions`:
