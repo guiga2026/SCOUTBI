@@ -20,7 +20,7 @@ A chave e enviada no header oficial `x-apisports-key`; ela nunca deve ser commit
 4. Faça o deploy e configure o dominio apontando para o servico `api`, na porta interna `8000`.
 5. Ative HTTPS pelo proxy do Dokploy e valide `https://api.seudominio.com/api/v1/health`.
 
-O Compose foi configurado para receber as variaveis do ambiente do Dokploy; nao e necessario criar um arquivo `.env` na VPS. Configure volumes persistentes para `postgres_data` e `redis_data` no Dokploy. Para executar o primeiro sync, use o terminal do container `api` e rode `python pipiline.py`.
+O Compose foi configurado para receber as variaveis do ambiente do Dokploy; nao e necessario criar um arquivo `.env` na VPS. Neste ambiente, PostgreSQL e Redis devem ser servicos internos ja provisionados no Dokploy. Para executar o primeiro sync, use o terminal do container `api` e rode `python pipiline.py`.
 
 ### Deploy automatico pelo GitHub Actions
 

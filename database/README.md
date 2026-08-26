@@ -4,4 +4,4 @@
 
 A pasta `migrations` e reservada para Alembic. O MVP ainda cria tabelas automaticamente no startup para facilitar a primeira instalacao; antes de producao, o fluxo deve ser migrado para `alembic upgrade head`.
 
-Os volumes `postgres_data` e `redis_data` precisam ser persistentes no Dokploy. Nunca remova o volume do PostgreSQL durante um redeploy.
+O banco e o Redis devem usar volumes persistentes no Dokploy. Nunca remova o volume do PostgreSQL durante um redeploy.

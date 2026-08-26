@@ -4,36 +4,9 @@ services:
     command: uvicorn sports_bi.app.main:app --host 0.0.0.0 --port 8000
     environment:
       API_FOOTBALL_KEY: ${API_FOOTBALL_KEY:?API_FOOTBALL_KEY is required}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://sports_bi:sports_bi@db:5432/sports_bi}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     ports:
       - "8000:8000"
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: sports_bi
-      POSTGRES_USER: sports_bi
-      POSTGRES_PASSWORD: sports_bi
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sports_bi -d sports_bi"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-volumes:
-  postgres_data:
-  redis_data:
