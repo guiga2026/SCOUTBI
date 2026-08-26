@@ -24,6 +24,22 @@ O Compose foi configurado para receber as variaveis do ambiente do Dokploy; nao 
 
 O comando de inicializacao do servico `api` deve ser `uvicorn sports_bi.app.main:app --host 0.0.0.0 --port 8000`. Nao use somente `python3`, pois esse processo termina imediatamente e gera `502 Bad Gateway`. O `Dockerfile` tambem define esse comando por padrao.
 
+### Exportar todos os dados para XLSX
+
+Depois de executar o sync e aplicar as views, abra o terminal do container `api` e execute:
+
+```bash
+python export_xlsx.py --output /tmp/sports_bi_export.xlsx
+```
+
+O arquivo inclui todas as tabelas e views do schema `public`, incluindo dados brutos e views Gold. Para copiar o arquivo da API para a VPS, execute no terminal da VPS:
+
+```bash
+docker cp $(docker ps -q --filter "name=sqlbi-compose-8zyus6" | head -1):/tmp/sports_bi_export.xlsx /root/sports_bi_export.xlsx
+```
+
+Depois baixe `/root/sports_bi_export.xlsx` por SFTP. O exportador nao inclui senhas nem variaveis de ambiente.
+
 ### Deploy automatico pelo GitHub Actions
 
 O workflow em `.github/workflows/deploy-dokploy.yml` dispara um novo deploy a cada push na branch `main`. No repositorio GitHub, cadastre em `Settings > Secrets and variables > Actions`:
