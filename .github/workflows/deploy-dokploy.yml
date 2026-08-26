@@ -1,0 +1,27 @@
+name: Deploy to Dokploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Compose project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Dokploy deployment
+        uses: thinesjs/dokploy-deployer-action@v1
+        with:
+          dokploy_url: ${{ secrets.DOKPLOY_URL }}
+          api_key: ${{ secrets.DOKPLOY_API_KEY }}
+          type: compose
+          compose_id: ${{ secrets.DOKPLOY_COMPOSE_ID }}
+          wait_for_deployment: true
+          deployment_check_interval: 10
+          deployment_timeout: 600
+          max_retries: 5

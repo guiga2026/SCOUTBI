@@ -22,6 +22,18 @@ A chave e enviada no header oficial `x-apisports-key`; ela nunca deve ser commit
 
 O Compose foi configurado para receber as variaveis do ambiente do Dokploy; nao e necessario criar um arquivo `.env` na VPS. Configure volumes persistentes para `postgres_data` e `redis_data` no Dokploy. Para executar o primeiro sync, use o terminal do container `api` e rode `python pipiline.py`.
 
+### Deploy automatico pelo GitHub Actions
+
+O workflow em `.github/workflows/deploy-dokploy.yml` dispara um novo deploy a cada push na branch `main`. No repositorio GitHub, cadastre em `Settings > Secrets and variables > Actions`:
+
+```text
+DOKPLOY_URL=https://dokploy.seudominio.com
+DOKPLOY_API_KEY=chave-gerada-no-Dokploy
+DOKPLOY_COMPOSE_ID=id-do-servico-compose
+```
+
+O `DOKPLOY_URL` deve ser a URL base do Dokploy, sem `/api` e sem barra final. O `DOKPLOY_COMPOSE_ID` e o ID do servico Compose no Dokploy, nao o ID do projeto. Esses valores sao secrets do GitHub e nao devem ser adicionados ao `.env`, ao codigo ou aos logs.
+
 ## Escopo atual
 
 O MVP cobre health, competicoes, times, jogos e sync idempotente de competicoes brasileiras. A base esta pronta para temporadas, eventos, estatisticas, standings, migrations Alembic, jobs agendados e views dimensionais para Power BI.
