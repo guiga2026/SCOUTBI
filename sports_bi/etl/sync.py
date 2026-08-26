@@ -50,6 +50,7 @@ def sync_league_season(league_id: int, season_year: int, api: FootballAPI | None
     season_data = next((item for item in seasons if item.get("year") == season_year), None)
     teams = football_api.teams(league_id, season_year) if season_data else []
     fixtures = football_api.fixtures(league_id, season_year) if season_data else []
+    loaded_fixtures = 0
     with SessionLocal.begin() as session:
         _raw(session, "/leagues", {"id": league_id}, seasons)
         competition = session.get(Competition, league_id)
@@ -77,6 +78,7 @@ def sync_league_season(league_id: int, season_year: int, api: FootballAPI | None
             team.code = team_data.get("code")
             team.country = team_data.get("country")
             team.logo = team_data.get("logo")
+        session.flush()
         _raw(session, "/fixtures", {"league": league_id, "season": season_year}, fixtures)
         for item in fixtures:
             fixture_data = item.get("fixture", {})
@@ -84,20 +86,25 @@ def sync_league_season(league_id: int, season_year: int, api: FootballAPI | None
             goals = item.get("goals", {})
             if not fixture_data.get("id"):
                 continue
+            home_team_id = (teams_data.get("home") or {}).get("id")
+            away_team_id = (teams_data.get("away") or {}).get("id")
+            if (home_team_id is not None and session.get(Team, home_team_id) is None) or (away_team_id is not None and session.get(Team, away_team_id) is None):
+                continue
             fixture = session.get(Fixture, fixture_data["id"])
             if fixture is None:
                 fixture = Fixture(id=fixture_data["id"])
                 session.add(fixture)
             fixture.competition_id = league_id
             fixture.season_id = season.id
-            fixture.home_team_id = (teams_data.get("home") or {}).get("id")
-            fixture.away_team_id = (teams_data.get("away") or {}).get("id")
+            fixture.home_team_id = home_team_id
+            fixture.away_team_id = away_team_id
             fixture.date = _date(fixture_data.get("date"))
             fixture.status = (fixture_data.get("status") or {}).get("short")
             fixture.round = (item.get("league") or {}).get("round")
             fixture.home_goals = goals.get("home")
             fixture.away_goals = goals.get("away")
-    return {"season": int(bool(season_data)), "teams": len(teams), "fixtures": len(fixtures)}
+            loaded_fixtures += 1
+    return {"season": int(bool(season_data)), "teams": len(teams), "fixtures": loaded_fixtures}
 
 
 def sync_fixture_details(fixture_id: int, api: FootballAPI | None = None) -> dict[str, int]:
