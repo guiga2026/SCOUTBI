@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from redis import Redis
@@ -9,13 +11,17 @@ from sports_bi.app.database import create_tables, get_db
 from sports_bi.app.models import Competition, Coverage, Fixture, Season, Team
 
 settings = get_settings()
+logger = logging.getLogger("sports_bi")
 app = FastAPI(title="Sports BI API", version="0.1.0", description="API historica de futebol brasileiro")
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins.split(","), allow_methods=["*"], allow_headers=["*"])
 
 
 @app.on_event("startup")
 def startup() -> None:
-    create_tables()
+    try:
+        create_tables()
+    except Exception:
+        logger.exception("Database initialization failed; API remains available for health diagnostics")
 
 
 @app.get("/api/v1/health")
