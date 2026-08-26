@@ -4,4 +4,4 @@ from sports_bi.etl.sync import sync_brazilian_competitions
 
 
 if __name__ == "__main__":
-    sync_brazilian_competitions()
+    print(f"Competições sincronizadas: {sync_brazilian_competitions()}", flush=True)
