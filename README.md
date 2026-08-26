@@ -1,0 +1,27 @@
+# Sports BI
+
+MVP de uma plataforma de dados historicos de futebol brasileiro, usando API-Football como fonte externa, PostgreSQL como historico e Redis preparado para cache.
+
+## Executar com Docker
+
+1. Copie `.env.example` para `.env` e preencha `API_FOOTBALL_KEY`.
+2. Suba os servicos: `docker compose up --build -d`.
+3. Abra o Swagger em `http://localhost:8000/docs`.
+4. Execute o primeiro sync: `docker compose exec api python pipiline.py`.
+5. Consulte `GET /api/v1/competitions`.
+
+A chave e enviada no header oficial `x-apisports-key`; ela nunca deve ser commitada, retornada pela API ou colocada no frontend. A API externa pode ter cobertura diferente por competicao e temporada; o ETL deve preservar valores ausentes como `NULL`.
+
+## Deploy com Dokploy
+
+1. Crie uma aplicacao do tipo `Compose` no Dokploy e conecte o repositorio Git.
+2. Use a raiz do repositorio como `Compose Path` e mantenha o arquivo `docker-compose.yml` selecionado.
+3. Cadastre em `Environment` as variaveis `API_FOOTBALL_KEY`, `DATABASE_URL`, `REDIS_URL` e `CORS_ORIGINS`. Nao coloque a chave no Git.
+4. Faça o deploy e configure o dominio apontando para o servico `api`, na porta interna `8000`.
+5. Ative HTTPS pelo proxy do Dokploy e valide `https://api.seudominio.com/api/v1/health`.
+
+O Compose foi configurado para receber as variaveis do ambiente do Dokploy; nao e necessario criar um arquivo `.env` na VPS. Configure volumes persistentes para `postgres_data` e `redis_data` no Dokploy. Para executar o primeiro sync, use o terminal do container `api` e rode `python pipiline.py`.
+
+## Escopo atual
+
+O MVP cobre health, competicoes, times, jogos e sync idempotente de competicoes brasileiras. A base esta pronta para temporadas, eventos, estatisticas, standings, migrations Alembic, jobs agendados e views dimensionais para Power BI.
