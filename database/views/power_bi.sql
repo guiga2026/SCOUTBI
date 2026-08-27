@@ -87,3 +87,27 @@ FROM player_statistics ps
 LEFT JOIN fixtures f ON f.id = ps.fixture_id
 LEFT JOIN players p ON p.id = ps.player_id
 LEFT JOIN teams t ON t.id = ps.team_id;
+
+CREATE OR REPLACE VIEW vw_metric_definitions AS
+SELECT metric_key, version, name, category, source_type, formula, methodology, active
+FROM metric_definitions;
+
+CREATE OR REPLACE VIEW vw_player_features AS
+SELECT pf.player_id, p.name AS player_name, pf.team_id, t.name AS team_name,
+       pf.competition_id, c.name AS competition_name, pf.season_id, s.year AS season_year,
+       pf.metric_key, pf.metric_version, pf.value, pf.sample_size, pf.confidence, pf.source_type
+FROM player_season_features pf
+LEFT JOIN players p ON p.id = pf.player_id
+LEFT JOIN teams t ON t.id = pf.team_id
+LEFT JOIN competitions c ON c.id = pf.competition_id
+LEFT JOIN seasons s ON s.id = pf.season_id;
+
+CREATE OR REPLACE VIEW vw_player_score_components AS
+SELECT sc.player_id, p.name AS player_name, sc.competition_id, c.name AS competition_name,
+       sc.season_id, s.year AS season_year, sc.position_model, sc.metric_key,
+       sc.metric_version, sc.raw_value, sc.normalized_value, sc.weight, sc.contribution,
+       sc.explanation
+FROM player_score_components sc
+LEFT JOIN players p ON p.id = sc.player_id
+LEFT JOIN competitions c ON c.id = sc.competition_id
+LEFT JOIN seasons s ON s.id = sc.season_id;

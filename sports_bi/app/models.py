@@ -146,3 +146,53 @@ class Coverage(TimestampMixin, Base):
     endpoint: Mapped[str] = mapped_column(String(100))
     available: Mapped[bool] = mapped_column(default=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class MetricDefinition(TimestampMixin, Base):
+    __tablename__ = "metric_definitions"
+    __table_args__ = (UniqueConstraint("metric_key", "version"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    metric_key: Mapped[str] = mapped_column(String(100))
+    version: Mapped[str] = mapped_column(String(20))
+    name: Mapped[str] = mapped_column(String(150))
+    category: Mapped[str] = mapped_column(String(50))
+    source_type: Mapped[str] = mapped_column(String(30))
+    formula: Mapped[str] = mapped_column(Text)
+    methodology: Mapped[str] = mapped_column(Text)
+    active: Mapped[bool] = mapped_column(default=True)
+
+
+class PlayerSeasonFeature(TimestampMixin, Base):
+    __tablename__ = "player_season_features"
+    __table_args__ = (UniqueConstraint("player_id", "team_id", "competition_id", "season_id", "metric_key", "metric_version"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"))
+    team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.id"), nullable=True)
+    competition_id: Mapped[int | None] = mapped_column(ForeignKey("competitions.id"), nullable=True)
+    season_id: Mapped[int | None] = mapped_column(ForeignKey("seasons.id"), nullable=True)
+    metric_key: Mapped[str] = mapped_column(String(100))
+    metric_version: Mapped[str] = mapped_column(String(20))
+    value: Mapped[float | None] = mapped_column(nullable=True)
+    sample_size: Mapped[int] = mapped_column(Integer, default=0)
+    confidence: Mapped[str] = mapped_column(String(20), default="low")
+    source_type: Mapped[str] = mapped_column(String(30), default="derived")
+
+
+class PlayerScoreComponent(TimestampMixin, Base):
+    __tablename__ = "player_score_components"
+    __table_args__ = (UniqueConstraint("player_id", "competition_id", "season_id", "position_model", "metric_key", "metric_version"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"))
+    competition_id: Mapped[int | None] = mapped_column(ForeignKey("competitions.id"), nullable=True)
+    season_id: Mapped[int | None] = mapped_column(ForeignKey("seasons.id"), nullable=True)
+    position_model: Mapped[str] = mapped_column(String(50))
+    metric_key: Mapped[str] = mapped_column(String(100))
+    metric_version: Mapped[str] = mapped_column(String(20))
+    raw_value: Mapped[float | None] = mapped_column(nullable=True)
+    normalized_value: Mapped[float | None] = mapped_column(nullable=True)
+    weight: Mapped[float] = mapped_column(default=0.0)
+    contribution: Mapped[float | None] = mapped_column(nullable=True)
+    explanation: Mapped[str] = mapped_column(Text)

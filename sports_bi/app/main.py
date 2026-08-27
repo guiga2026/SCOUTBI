@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from sports_bi.app.config import get_settings
 from sports_bi.app.database import create_tables, get_db
 from sports_bi.app.models import Competition, Coverage, Fixture, Season, Team
+from sports_bi.metrics.registry import seed_metric_definitions
 
 settings = get_settings()
 logger = logging.getLogger("sports_bi")
@@ -20,6 +21,7 @@ app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins.split(","
 def startup() -> None:
     try:
         create_tables()
+        seed_metric_definitions()
     except Exception:
         logger.exception("Database initialization failed; API remains available for health diagnostics")
 
@@ -64,6 +66,13 @@ def coverage(competition_id: int | None = Query(default=None), db: Session = Dep
     if competition_id:
         query = query.filter(Coverage.competition_id == competition_id)
     return [{"competition_id": item.competition_id, "season_id": item.season_id, "endpoint": item.endpoint, "available": item.available, "notes": item.notes} for item in query.all()]
+
+
+@app.get("/api/v1/metrics")
+def metrics(db: Session = Depends(get_db)) -> list[dict[str, object]]:
+    from sports_bi.app.models import MetricDefinition
+
+    return [{"key": item.metric_key, "version": item.version, "name": item.name, "category": item.category, "source_type": item.source_type, "formula": item.formula, "methodology": item.methodology, "active": item.active} for item in db.query(MetricDefinition).order_by(MetricDefinition.category, MetricDefinition.metric_key).all()]
 
 
 @app.get("/api/v1/fixtures")
