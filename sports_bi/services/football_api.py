@@ -60,3 +60,15 @@ class FootballAPI:
     def standings(self, league_id: int, season: int) -> list[dict[str, Any]]:
         return self.get("/standings", league=league_id, season=season)
 
+    def lineups(self, fixture_id: int) -> list[dict[str, Any]]:
+        return self.get("/fixtures/lineups", fixture=fixture_id)
+
+    def player_statistics(self, player_id: int, league_id: int, season: int) -> list[dict[str, Any]]:
+        return self.get("/players", id=player_id, league=league_id, season=season)
+
+    def transfers(self, player_id: int) -> list[dict[str, Any]]:
+        return self.get("/transfers", player=player_id)
+
+    def injuries(self, league_id: int, season: int) -> list[dict[str, Any]]:
+        return self.get("/injuries", league=league_id, season=season)
+
