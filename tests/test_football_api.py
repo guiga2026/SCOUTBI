@@ -42,3 +42,15 @@ def test_player_statistics_uses_documented_query_parameters(monkeypatch: pytest.
     assert requests[0].url.path == "/players"
     assert dict(requests[0].url.params) == {"id": "10", "league": "72", "season": "2024"}
     get_settings.cache_clear()
+
+
+def test_competitions_accepts_configured_country(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("API_FOOTBALL_KEY", "test-key")
+    from sports_bi.app.config import get_settings
+
+    get_settings.cache_clear()
+    requests: list[httpx.Request] = []
+    client = httpx.Client(transport=httpx.MockTransport(lambda request: requests.append(request) or httpx.Response(200, json={"response": []})), base_url="https://test")
+    FootballAPI(client).competitions("England")
+    assert dict(requests[0].url.params) == {"country": "England"}
+    get_settings.cache_clear()

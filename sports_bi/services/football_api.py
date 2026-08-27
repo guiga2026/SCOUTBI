@@ -4,6 +4,7 @@ from typing import Any
 import httpx
 
 from sports_bi.app.config import get_settings
+from sports_bi.services.cache import RedisCache
 
 
 class FootballAPIError(RuntimeError):
@@ -17,10 +18,22 @@ class FootballAPI:
             raise FootballAPIError("API_FOOTBALL_KEY não configurada")
         self.client = client or httpx.Client(base_url=settings.api_football_base_url, timeout=settings.api_timeout_seconds)
         self.client.headers["x-apisports-key"] = settings.api_football_key
+        self.cache = RedisCache(settings.redis_url) if settings.redis_cache_enabled else None
 
     def get(self, endpoint: str, **params: Any) -> list[dict[str, Any]]:
         settings = get_settings()
         clean_params = {key: value for key, value in params.items() if value is not None}
+        if self.cache:
+            try:
+                cached = self.cache.get(endpoint, clean_params)
+                if cached is not None:
+                    return cached
+                if not self.cache.consume_quota(settings.api_daily_request_limit):
+                    raise FootballAPIError("Limite diário configurado para a API-Football atingido")
+            except FootballAPIError:
+                raise
+            except Exception:
+                pass
         response: httpx.Response | None = None
         for attempt in range(settings.api_max_retries + 1):
             response = self.client.get(endpoint, params=clean_params)
@@ -37,13 +50,20 @@ class FootballAPI:
         errors = payload.get("errors") or {}
         if errors:
             raise FootballAPIError(f"API-Football retornou erros: {errors}")
-        return payload.get("response", [])
+        result = payload.get("response", [])
+        if self.cache:
+            try:
+                self.cache.set(endpoint, clean_params, result)
+            except Exception:
+                pass
+        return result
 
-    def competitions(self) -> list[dict[str, Any]]:
-        return self.get("/leagues", country="Brazil")
+    def competitions(self, country: str | None = None) -> list[dict[str, Any]]:
+        return self.get("/leagues", country=country)
 
     def seasons(self, league_id: int) -> list[dict[str, Any]]:
-        return self.get("/leagues", id=league_id)[0].get("seasons", [])
+        rows = self.get("/leagues", id=league_id)
+        return rows[0].get("seasons", []) if rows else []
 
     def teams(self, league_id: int, season: int) -> list[dict[str, Any]]:
         return self.get("/teams", league=league_id, season=season)

@@ -83,6 +83,19 @@ O modelo normalizado nunca deve depender do nome de um fornecedor. A tabela de i
 6. Adicionar video/Wyscout e mercado como fontes independentes.
 7. So depois habilitar modelos de ML e tracking.
 
+## Homologacao reproducivel
+
+O primeiro caso de teste e a Serie B de 2024. O ano nao esta embutido na logica: o mesmo comando pode receber outra temporada:
+
+```bash
+python pipiline.py --country Brazil --competition "Serie B" --season 2024 --mode historical
+python pipiline.py --country Brazil --competition "Serie B" --season 2022 --mode historical
+```
+
+O resultado de cada execucao deve ser comparado por temporada, nunca sobrescrito. A homologacao exige verificar contagens de equipes e partidas, duplicidades, status, cobertura de eventos, disponibilidade de estatisticas e amostra de jogadores. A API pode bloquear uma temporada por plano; isso deve ser registrado como limitacao de cobertura, nao como dado vazio equivalente a zero.
+
+O limite gratuito deve ser configurado explicitamente com `API_DAILY_REQUEST_LIMIT=100`. O Redis armazena respostas por endpoint e parametros e controla a janela de quota. Uma resposta em cache nao consome quota; falha do Redis nao derruba a API, mas deve ser observada nos logs.
+
 ## Regras de confiabilidade
 
 - Nao preencher cobertura ausente com zero.

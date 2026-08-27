@@ -1,0 +1,1 @@
+"""Interchangeable football data providers."""

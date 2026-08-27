@@ -10,12 +10,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Sincroniza dados de futebol para o Sports BI")
     parser.add_argument("--competition", default=None, help="Nome da competição brasileira, por exemplo Serie B")
     parser.add_argument("--season", type=int, default=None, help="Ano da temporada")
+    parser.add_argument("--country", default="Brazil", help="País da competição")
+    parser.add_argument("--mode", choices=("historical", "incremental", "live"), default="historical")
     args = parser.parse_args()
 
     api = FootballAPI()
-    rows = api.competitions()
-    synced = sync_brazilian_competitions(api)
-    print(f"Competições brasileiras descobertas e sincronizadas: {synced}", flush=True)
+    if args.mode == "live":
+        parser.error("Modo live ainda não está habilitado: requer polling configurado e quota dedicada")
+    rows = api.competitions(args.country)
+    synced = sync_brazilian_competitions(api, args.country, rows)
+    print(f"Competições de {args.country} descobertas e sincronizadas: {synced} (modo={args.mode})", flush=True)
     if args.competition is None and args.season is None:
         return
     if not args.competition or args.season is None:

@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sports_bi.app.database import SessionLocal, create_tables
 from sports_bi.app.models import Competition, Coverage, Fixture, FixtureEvent, FixtureStatistic, Player, RawIngestion, Season, Standing, Team
 from sports_bi.services.football_api import FootballAPI
+from sports_bi.providers.base import DataProvider
 
 
 def _raw(session: Any, endpoint: str, params: dict[str, Any], payload: list[dict[str, Any]]) -> None:
@@ -19,11 +20,11 @@ def _date(value: str | None) -> datetime | None:
     return datetime.fromisoformat(value.replace("Z", "+00:00")).replace(tzinfo=None)
 
 
-def sync_brazilian_competitions(api: FootballAPI | None = None) -> int:
+def sync_brazilian_competitions(api: DataProvider | None = None, country: str = "Brazil", rows: list[dict[str, Any]] | None = None) -> int:
     """Discover Brazilian competitions and preserve every received payload."""
     create_tables()
     football_api = api or FootballAPI()
-    rows = football_api.competitions()
+    rows = rows if rows is not None else football_api.competitions(country)
     with SessionLocal.begin() as session:
         _raw(session, "/leagues", {"country": "Brazil"}, rows)
         for item in rows:
@@ -42,7 +43,7 @@ def sync_brazilian_competitions(api: FootballAPI | None = None) -> int:
     return len(rows)
 
 
-def sync_league_season(league_id: int, season_year: int, api: FootballAPI | None = None) -> dict[str, int]:
+def sync_league_season(league_id: int, season_year: int, api: DataProvider | None = None) -> dict[str, int]:
     """Load teams and fixtures for one league-season; unavailable data stays absent/NULL."""
     create_tables()
     football_api = api or FootballAPI()
@@ -107,7 +108,7 @@ def sync_league_season(league_id: int, season_year: int, api: FootballAPI | None
     return {"season": int(bool(season_data)), "teams": len(teams), "fixtures": loaded_fixtures}
 
 
-def sync_fixture_details(fixture_id: int, api: FootballAPI | None = None) -> dict[str, int]:
+def sync_fixture_details(fixture_id: int, api: DataProvider | None = None) -> dict[str, int]:
     """Load optional events and statistics without inventing unsupported metrics."""
     create_tables()
     football_api = api or FootballAPI()
@@ -141,7 +142,7 @@ def sync_fixture_details(fixture_id: int, api: FootballAPI | None = None) -> dic
     return {"events": len(events), "statistics": len(statistics)}
 
 
-def sync_standings(league_id: int, season_year: int, api: FootballAPI | None = None) -> int:
+def sync_standings(league_id: int, season_year: int, api: DataProvider | None = None) -> int:
     """Load the standings endpoint when the provider exposes it for the slice."""
     create_tables()
     football_api = api or FootballAPI()

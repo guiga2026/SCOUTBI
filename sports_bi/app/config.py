@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
     api_timeout_seconds: float = 20.0
     api_max_retries: int = 3
+    api_daily_request_limit: int = 100
+    redis_cache_enabled: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
