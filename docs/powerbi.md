@@ -11,6 +11,7 @@ O Power BI deve consumir as views Gold do PostgreSQL, e nao a API-Football diret
 - Catalogo de metricas: `vw_metric_definitions`
 - Features temporais: `vw_player_features`
 - Explicabilidade: `vw_player_score_components`
+- Rankings versionados: `vw_player_scores`
 
 Por seguranca, nao exponha a porta do PostgreSQL na internet. Prefira VPN, tunel SSH ou uma rede privada. O usuario do Power BI deve ter permissao somente de leitura.
 
@@ -31,6 +32,8 @@ Nao trate uma ausencia de estatistica como zero. Valor ausente significa que a f
 ## Inteligencia e governanca
 
 Cada metrica possui `metric_key`, `version`, `source_type`, `formula` e `methodology`. Os valores de `source_type` distinguem dado original, derivado e modelo. O Power BI deve exibir a versao da metrica quando comparar temporadas. Scores de potencial e oportunidade de mercado permanecem nulos ate que exista amostra longitudinal e uma fonte de valor de mercado licenciada; nao substitua nulos por zero.
+
+Os modelos de posicao usam pesos separados para `goalkeeper`, `center_back`, `full_back`, `midfielder` e `forward`. O score so deve ser calculado quando houver features observadas para o jogador. A confianca e derivada do tamanho da amostra e deve aparecer no relatorio junto do score. A explicacao deve ser lida a partir de `vw_player_score_components`, nunca reconstruida manualmente no Power BI.
 
 ## Medidas DAX
 

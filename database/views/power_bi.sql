@@ -111,3 +111,12 @@ FROM player_score_components sc
 LEFT JOIN players p ON p.id = sc.player_id
 LEFT JOIN competitions c ON c.id = sc.competition_id
 LEFT JOIN seasons s ON s.id = sc.season_id;
+
+CREATE OR REPLACE VIEW vw_player_scores AS
+SELECT ps.player_id, p.name AS player_name, ps.competition_id, c.name AS competition_name,
+       ps.season_id, s.year AS season_year, ps.position_model, ps.metric_version,
+       ps.score, ps.confidence, ps.explanation, ps.source_type
+FROM player_scores ps
+LEFT JOIN players p ON p.id = ps.player_id
+LEFT JOIN competitions c ON c.id = ps.competition_id
+LEFT JOIN seasons s ON s.id = ps.season_id;

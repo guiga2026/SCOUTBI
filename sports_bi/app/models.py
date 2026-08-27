@@ -196,3 +196,19 @@ class PlayerScoreComponent(TimestampMixin, Base):
     weight: Mapped[float] = mapped_column(default=0.0)
     contribution: Mapped[float | None] = mapped_column(nullable=True)
     explanation: Mapped[str] = mapped_column(Text)
+
+
+class PlayerScore(TimestampMixin, Base):
+    __tablename__ = "player_scores"
+    __table_args__ = (UniqueConstraint("player_id", "competition_id", "season_id", "position_model", "metric_version"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"))
+    competition_id: Mapped[int | None] = mapped_column(ForeignKey("competitions.id"), nullable=True)
+    season_id: Mapped[int | None] = mapped_column(ForeignKey("seasons.id"), nullable=True)
+    position_model: Mapped[str] = mapped_column(String(50))
+    metric_version: Mapped[str] = mapped_column(String(20))
+    score: Mapped[float | None] = mapped_column(nullable=True)
+    confidence: Mapped[str] = mapped_column(String(20), default="low")
+    explanation: Mapped[str] = mapped_column(Text)
+    source_type: Mapped[str] = mapped_column(String(30), default="model")

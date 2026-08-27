@@ -30,6 +30,15 @@ METRICS = (
 )
 
 
+POSITION_MODELS: dict[str, dict[str, float]] = {
+    "goalkeeper": {"shot_stopping": 0.30, "distribution": 0.20, "sweeping": 0.15, "cross_management": 0.15, "decision_making": 0.20},
+    "center_back": {"defensive": 0.30, "progression": 0.20, "aerial": 0.20, "possession": 0.15, "decision_making": 0.15},
+    "full_back": {"defensive": 0.20, "progression": 0.20, "creation": 0.20, "ball_carrying": 0.20, "transition": 0.20},
+    "midfielder": {"progression": 0.20, "creation": 0.25, "possession": 0.20, "defensive": 0.15, "decision_making": 0.20},
+    "forward": {"finishing": 0.25, "creation": 0.15, "movement": 0.20, "progression": 0.15, "efficiency": 0.25},
+}
+
+
 def seed_metric_definitions() -> int:
     create_tables()
     inserted = 0
