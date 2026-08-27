@@ -10,6 +10,7 @@ from sports_bi.app.config import get_settings
 from sports_bi.app.database import create_tables, get_db
 from sports_bi.app.models import Competition, Coverage, Fixture, Season, Team
 from sports_bi.metrics.registry import seed_metric_definitions
+from sports_bi.quality import build_quality_report
 
 settings = get_settings()
 logger = logging.getLogger("sports_bi")
@@ -73,6 +74,11 @@ def metrics(db: Session = Depends(get_db)) -> list[dict[str, object]]:
     from sports_bi.app.models import MetricDefinition
 
     return [{"key": item.metric_key, "version": item.version, "name": item.name, "category": item.category, "source_type": item.source_type, "formula": item.formula, "methodology": item.methodology, "active": item.active} for item in db.query(MetricDefinition).order_by(MetricDefinition.category, MetricDefinition.metric_key).all()]
+
+
+@app.get("/api/v1/quality/{competition_id}/{season_year}")
+def quality_report(competition_id: int, season_year: int, db: Session = Depends(get_db)) -> dict[str, object]:
+    return build_quality_report(db, competition_id, season_year)
 
 
 @app.get("/api/v1/fixtures")

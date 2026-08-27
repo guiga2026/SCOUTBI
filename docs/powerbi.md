@@ -13,6 +13,8 @@ O Power BI deve consumir as views Gold do PostgreSQL, e nao a API-Football diret
 - Explicabilidade: `vw_player_score_components`
 - Rankings versionados: `vw_player_scores`
 
+Relatorio de homologacao via API: `GET /api/v1/quality/{competition_id}/{season_year}`. Ele separa cobertura medida de dimensoes ainda indisponiveis e informa duplicidades e frescor da coleta.
+
 Por seguranca, nao exponha a porta do PostgreSQL na internet. Prefira VPN, tunel SSH ou uma rede privada. O usuario do Power BI deve ter permissao somente de leitura.
 
 ## Modelo
